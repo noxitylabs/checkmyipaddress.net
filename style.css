@@ -1,0 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro');
+body{font-family: 'Source Sans Pro', sans-serif;}
+.dark{background-color: #092948;color: #b12743;}
+.light{background-color: #122a47;color: #e32559;}
+.font-override{color: white;}
+.content{width: 600px;margin: 0 auto;text-align: center;padding-top: 40px;}
+.ipboxlight{background-color: #092948;color: #b12743;padding: 3%;border-radius: 5px;font-weight: bolder;font-size: 40px;border: 1px solid #b12743;}
+.ipboxdark{background-color: #122a47;color: #e32559;padding: 3%;border-radius: 5px;font-weight: bolder;font-size: 40px;border: 1px solid #e32559;}
