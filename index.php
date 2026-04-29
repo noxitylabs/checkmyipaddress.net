@@ -1,18 +1,17 @@
-<?php 
-// Function to get the real IP address
+<?php
 function getIpAddress() {
     foreach (array('HTTP_CLIENT_IP', 'HTTP_X_FORWARDED_FOR', 'REMOTE_ADDR') as $key) {
         if (array_key_exists($key, $_SERVER) === true) {
             foreach (explode(',', $_SERVER[$key]) as $ip) {
-                $ip = trim($ip); // Just to be safe
+                $ip = trim($ip);
                 if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
-                    return $ip; // Return IPv6 if available
+                    return $ip;
                 }
             }
             foreach (explode(',', $_SERVER[$key]) as $ip) {
-                $ip = trim($ip); // Just to be safe
+                $ip = trim($ip);
                 if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
-                    return $ip; // Return IPv4 if IPv6 is not found
+                    return $ip;
                 }
             }
         }
@@ -21,159 +20,241 @@ function getIpAddress() {
 }
 
 $ip = getIpAddress();
+$isV6 = filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) !== false;
+$isV4 = filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) !== false;
 
-// Check if the request is from a CURL command
-if (stripos($_SERVER["HTTP_USER_AGENT"] ?? "", "curl") !== false) {
-    // Check if IPv6 is specifically requested via the URL query parameter
-    if(isset($_GET['mode']) && strtolower($_GET['mode']) == 'v6') {
+if (stripos($_SERVER['HTTP_USER_AGENT'] ?? '', 'curl') !== false) {
+    if (isset($_GET['mode']) && strtolower($_GET['mode']) === 'v6') {
         $ipv6 = filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6);
-        if ($ipv6 === false) {
-            echo "IPv6 Not available\n";  // Display message if no IPv6 address is found
-        } else {
-            echo $ipv6 . "\n";  // Display the IPv6 address
-        }
+        echo ($ipv6 === false ? "IPv6 Not available" : $ipv6) . "\n";
     } else {
         $ipv4 = filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4);
-        if($ipv4 === false) {
-            echo "IPv4 Not available\n";  // Handle case where no IPv4 is found
-        } else {
-            echo $ipv4 . "\n";  // Display the IPv4 address
-        }
+        echo ($ipv4 === false ? "IPv4 Not available" : $ipv4) . "\n";
     }
     exit;
-} else {
+}
+
+$versionLabel = $isV6 ? 'IPv6' : ($isV4 ? 'IPv4' : 'Unavailable');
+$versionClass = $isV6 ? 'v6' : ($isV4 ? 'v4' : 'unavailable');
+$displayIp = $ip !== '' ? $ip : 'No address detected';
+$year = date('Y');
 ?>
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en">
 <head>
-    <title>Check My IP Address</title>
+    <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Check My IP Address — Noxity</title>
+    <meta name="description" content="A simple, honest tool from Noxity that shows your public IP address — IPv4 or IPv6 — with a one-line curl command for your terminal.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="style.css" rel="stylesheet" type="text/css">
-    <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v6.0.0-beta3/css/all.css">
-    <link href="https://unpkg.com/microtip/microtip.css" rel="stylesheet">
-    
-<style>
-    .command-container {
-        display: flex;
-        justify-content: space-between;
-        gap: 20px; /* Adds space between the command boxes */
-        margin-top: 10px;
-    }
-    .command-box {
-        background-color: #d13b5b; /* Custom Red background */
-        padding: 10px;
-        flex: 1;
-        border-radius: 5px;
-        text-align: left;
-        position: relative;
-    }
-    .command-url {
-        background-color: #9f2c47; /* Darker red for the URL part */
-        color: white;
-        padding: 10px;
-        border-radius: 5px;
-        cursor: pointer;
-        display: inline-block;
-        margin-top: 5px;
-        position: relative; /* Relative positioning for the tooltip */
-    }
-    .command-label {
-        font-weight: bold;
-        display: block;
-        color: white;
-        margin-bottom: 5px;
-    }
-    /* Tooltip styles */
-    .command-url[aria-label]:hover:after {
-        content: attr(aria-label);
-        position: absolute;
-        top: -35px;
-        right: 0;
-        background: black;
-        color: white;
-        padding: 5px 15px;
-        border-radius: 5px;
-        z-index: 20;
-        white-space: nowrap;
-    }
-</style>
 </head>
-<body class="light" id="pagebody">
-<div class="content">
-    <h2>Your current IP address is</h2>
-    <div id="copy" class="ipboxdark" aria-label="Click to copy 📋" data-microtip-position="top" role="tooltip">
-        <?php echo $ip; ?>
+<body>
+
+<header class="topbar">
+    <nav class="pill-nav">
+        <a class="brand" href="https://noxity.io" aria-label="Noxity">
+            <span class="mark">N</span>
+            <span class="word">Nox<em>it</em>y.</span>
+        </a>
+        <div class="nav-links">
+            <a href="https://noxity.io">Hosting</a>
+            <a href="#what-is-an-ip">What is an IP?</a>
+            <a href="#terminal">Terminal</a>
+        </div>
+    </nav>
+</header>
+
+<main>
+    <section class="hero">
+        <div class="shell">
+            <div class="hero-eyebrow"><span class="eyebrow">IP Lookup · honest &amp; ad-free</span></div>
+            <h1>Your public<br><em>address</em>, plainly.</h1>
+            <p class="hero-lead">No ads, no tracking, no fluff — just the IP your network is presenting to the world right <em>now</em>.</p>
+
+            <div class="ip-stage">
+                <div class="ip-stage-head">
+                    <span class="label">Detected address</span>
+                    <span class="ip-version <?php echo htmlspecialchars($versionClass); ?>"><?php echo htmlspecialchars($versionLabel); ?></span>
+                </div>
+
+                <div id="copy" class="ip-display" role="button" tabindex="0" aria-label="Copy IP address">
+                    <span class="ip-text" id="ipText"><?php echo htmlspecialchars($displayIp); ?></span>
+                    <span class="ip-hint" aria-hidden="true">
+                        <span class="hint-idle">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+                            <span>Click to copy</span>
+                        </span>
+                        <span class="hint-done">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l4.5 4.5L20 6"/></svg>
+                            <span>Copied</span>
+                        </span>
+                    </span>
+                </div>
+
+                <div class="ip-stage-foot">
+                    <div class="meta">
+                        <span><b>Protocol</b><?php echo htmlspecialchars($versionLabel); ?></span>
+                        <span><b>Resolved</b>Live, server-side</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" id="what-is-an-ip">
+        <div class="shell">
+            <div class="section-head">
+                <h2>What <em>is</em> an IP address?</h2>
+                <p class="lead">The language computers speak when they pass packets across networks. Every device on your network — and every server you reach — is identified by one.</p>
+            </div>
+            <div class="section-body">
+                <div>
+                    <p>IPv4 addresses are four 8-bit octets — numbers from 0 to 255 — separated by periods. That gives roughly <em>4.29 billion</em> unique addresses. A lot, until you remember how many phones, fridges, and cameras are on the internet today.</p>
+                    <p>So we&rsquo;re running out. Not in a panic-now way; in a planned-for-decades way.</p>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-eyebrow">The IPv6 successor</span>
+                    <div class="stat-number">340 <em>undecillion</em></div>
+                    <p class="stat-tag">Total addresses available with IPv6 — enough to assign one to every atom on Earth, with around 100 more Earths&rsquo; worth in reserve. Practically infinite.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" id="terminal">
+        <div class="shell">
+            <div class="section-head">
+                <h2>Use it from your <em>terminal.</em></h2>
+                <p class="lead">Hit the endpoint with curl and get just the address back &mdash; nothing else to parse, perfect for shell scripts and CI runs.</p>
+            </div>
+
+            <div class="term-grid">
+                <article class="term-card v4">
+                    <div class="term-tint">
+                        <span class="term-eyebrow">IPv4</span>
+                        <span class="term-tag"><em>default</em></span>
+                    </div>
+                    <div class="term-body">
+                        <div class="term-prompt" role="button" tabindex="0" aria-label="Copy command">
+                            <span class="dollar">$</span>
+                            <span class="cmd">curl checkmyipaddress.net</span>
+                            <span class="copy-icon idle" aria-hidden="true">
+                                <svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+                            </span>
+                            <span class="copy-icon done" aria-hidden="true">
+                                <svg viewBox="0 0 24 24"><path d="M5 12l4.5 4.5L20 6"/></svg>
+                                <span>Copied</span>
+                            </span>
+                        </div>
+                        <p class="term-desc">Returns your IPv4 address as plain text &mdash; no HTML, no JSON, no headers <em>to fight</em>.</p>
+                    </div>
+                </article>
+
+                <article class="term-card v6">
+                    <div class="term-tint">
+                        <span class="term-eyebrow">IPv6</span>
+                        <span class="term-tag"><em>opt-in</em></span>
+                    </div>
+                    <div class="term-body">
+                        <div class="term-prompt" role="button" tabindex="0" aria-label="Copy command">
+                            <span class="dollar">$</span>
+                            <span class="cmd">curl checkmyipaddress.net?mode=v6</span>
+                            <span class="copy-icon idle" aria-hidden="true">
+                                <svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+                            </span>
+                            <span class="copy-icon done" aria-hidden="true">
+                                <svg viewBox="0 0 24 24"><path d="M5 12l4.5 4.5L20 6"/></svg>
+                                <span>Copied</span>
+                            </span>
+                        </div>
+                        <p class="term-desc">Force the response to your IPv6 address &mdash; falls back to <em>&ldquo;IPv6 Not available&rdquo;</em> when your network can&rsquo;t reach v6.</p>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer>
+    <div class="shell">
+        <div class="foot-row">
+            <span>&copy; <?php echo $year; ?> Noxity.io &middot; Gostoljub d.o.o.</span>
+            <div class="foot-links">
+                <a href="https://noxity.io">Noxity.io</a>
+                <a href="https://github.com/Noxity-Network">GitHub</a>
+                <a href="mailto:hello@noxity.io">hello@noxity.io</a>
+            </div>
+        </div>
     </div>
-    <h4>
-        <b>What is an IP address?</b>
-        <br>
-        <span class="font-override">The language that computers use to transmit data packets across networks is called Internet Protocol. On your home/office network or the internet, your computer, mobile device, or appliance is identified by its IP address.
-        <br><br>
-        Four 8-bit octets (0 to 255) separated by a period make up IP addresses. There are about 4,294,967,296 addresses that may be used since this creates a 32-bit numeric address. Astonishingly, they will soon run out.
-        <br><br>
-        Don't freak out though! The IPv6 protocol was already developed by the researchers as a replacement. Having the ability to support 340,282,366,920,938,463,463,374,607,431,768,211,456 addresses, which is enough to give every atom on Earth an IP address. And have enough for around 100 more Earths.
-        </span>
-    </h4>
-<h4>
-    <b>Using This Tool via Terminal</b>
-    <br>
-    <span class="font-override">
-        Access your IP address directly from your terminal. Click on the appropriate command below to copy it to your clipboard.
-    </span>
-</h4>
-<div class="command-container">
-    <div class="command-box">
-        <span class="command-label">Copy IPv4 Command:</span>
-        <div class="command-url" onclick="copyCommand(this)">curl checkmyipaddress.net</div>
-    </div>
-    <div class="command-box">
-        <span class="command-label">Copy IPv6 Command (Soon):</span>
-        <div class="command-url" onclick="copyCommand(this)">curl checkmyipaddress.net?mode=v6</div>
-    </div>
-</div>
-    
-    <h5>Copyright 2024 - © Noxity.io (Gostoljub d.o.o.) - All rights reserved.</h5>
-</div>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-<script src="modehandler.js"></script>
-<script>
-document.getElementById("copy").onclick = function() {
-    var e = document.getElementById("copy");
-    if (document.body.createTextRange) {
-        var t = document.body.createTextRange();
-        t.moveToElementText(e), t.select(), document.execCommand("Copy");
-        $("#copy").attr("aria-label", "Copied ✔️"), setTimeout(function() {
-            $("#copy").attr("aria-label", "Click to copy 📋")
-        }, 3000);
-    } else if (window.getSelection) {
-        var o = window.getSelection(), t = document.createRange();
-        t.selectNodeContents(e), o.removeAllRanges(), o.addRange(t), document.execCommand("Copy");
-        $("#copy").attr("aria-label", "Copied ✔️"), setTimeout(function() {
-            $("#copy").attr("aria-label", "Click to copy 📋")
-        }, 3000);
-    }
-};
-</script>
+</footer>
 
 <script>
-    function copyCommand(element) {
-        var text = element.textContent || element.innerText;
-        var elem = document.createElement("textarea");
-        document.body.appendChild(elem);
-        elem.value = text;
-        elem.select();
-        document.execCommand("copy");
-        document.body.removeChild(elem);
-
-        // Trigger tooltip or visual feedback
-        element.setAttribute('aria-label', 'Copied!');
-        setTimeout(function() {
-            element.setAttribute('aria-label', 'Click to copy 📋');
-        }, 2000);
+(function () {
+    function fallbackCopy(text) {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.setAttribute('readonly', '');
+        ta.style.position = 'fixed';
+        ta.style.top = '0';
+        ta.style.left = '-9999px';
+        document.body.appendChild(ta);
+        ta.select();
+        try { document.execCommand('copy'); } catch (e) {}
+        document.body.removeChild(ta);
     }
+
+    function writeClipboard(text) {
+        if (navigator.clipboard && window.isSecureContext) {
+            return navigator.clipboard.writeText(text).catch(function () { fallbackCopy(text); });
+        }
+        fallbackCopy(text);
+        return Promise.resolve();
+    }
+
+    var resetTimers = new WeakMap();
+
+    function flashCopied(el) {
+        el.classList.add('is-copied');
+        var prev = resetTimers.get(el);
+        if (prev) clearTimeout(prev);
+        var timer = setTimeout(function () { el.classList.remove('is-copied'); }, 1800);
+        resetTimers.set(el, timer);
+    }
+
+    function bindCopy(el, getText) {
+        var doCopy = function (ev) {
+            if (ev) ev.preventDefault();
+            var text = getText();
+            if (!text) return;
+            writeClipboard(text);
+            flashCopied(el);
+        };
+        el.addEventListener('click', doCopy);
+        el.addEventListener('keydown', function (ev) {
+            if (ev.key === 'Enter' || ev.key === ' ') doCopy(ev);
+        });
+    }
+
+    var copyBtn = document.getElementById('copy');
+    if (copyBtn) {
+        var ipText = document.getElementById('ipText');
+        bindCopy(copyBtn, function () {
+            var v = ipText ? ipText.textContent.trim() : '';
+            return (v && v !== 'No address detected') ? v : '';
+        });
+    }
+
+    document.querySelectorAll('.term-prompt').forEach(function (el) {
+        bindCopy(el, function () {
+            var cmd = el.querySelector('.cmd');
+            return cmd ? cmd.textContent.trim() : '';
+        });
+    });
+})();
 </script>
 </body>
 </html>
-<?php
-}
-?>

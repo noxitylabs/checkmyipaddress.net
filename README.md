@@ -1,56 +1,101 @@
-# CheckMyIPAddress.net
+# checkmyipaddress.net
 
-checkmyipaddress.net is a simple web utility designed to display the current IP address of the user accessing the webpage. It's a simple and effective way to allow users to check their public IP address. The script determines the IP address of the user based on various server variables and displays it in a user-friendly format.
+A simple, honest tool that shows your public IP address — IPv4 or IPv6 — through a browser **or** straight from your terminal. No ads, no tracking, no fluff.
 
-***
+Operated by [Noxity.io](https://noxity.io) (Gostoljub d.o.o.).
 
-## Table of Contents
+---
 
-* [Getting Started](#getting-started)
-* [Prerequisites](#prerequisites)
-* [Installation](#installation)
-* [Usage](#usage)
-* [Contributing](#contributing)
-* [Roadmap](#roadmap)
-* [Acknowledgements](#acknowledgements)
+## Features
 
-***
+- **Auto-detect** — picks IPv6 when your network has it, falls back to IPv4
+- **Browser view** — editorial UI with one-click copy to clipboard
+- **Terminal mode** — `curl` returns the address as plain text, no parsing needed
+- **IPv4 / IPv6 explicit modes** — force the protocol you want from the command line
+- **Privacy-first** — addresses are not logged or stored
 
-## Getting Started
+---
 
-### Prerequisites
+## Usage
 
-- A web server with PHP support (e.g., Apache, Nginx).
-- PHP 7.0 or higher (PHP 8.0+ recommended).
+### Browser
 
-### Installation
+Open the site:
 
-1. Clone the repository or download the zip file.
-2. Place the contents in your web server's (root) directory.
+```
+https://checkmyipaddress.net
+```
 
-### Usage
+Click the IP card to copy it to your clipboard.
 
-- Navigate to the index page of where you uploaded the files using a web browser.
-- The page will automatically display your current IP address.
-- For CLI users, accessing the page with `curl https://checkmyipaddress.net` will return a plain IP address string.
+### Terminal
 
-***
+```bash
+# IPv4 (default)
+curl checkmyipaddress.net
 
-## Contributing
+# IPv6 (opt-in)
+curl checkmyipaddress.net?mode=v6
+```
 
-Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
+If the requested protocol isn't available on your network, the response is `IPv4 Not available` or `IPv6 Not available`.
 
-***
+---
 
-## Roadmap
+## Self-hosting
 
-- [ ] Add support for choosing the IPv4/IPv6 or default route via CLI tool.
-- [ ] Always default to displaying IPv4 address on the web page if available.
-- [ ] Add additional data about the IP address such as ISP information, geolocation, etc.
+### Requirements
 
-***
+- PHP 8.0 or higher
+- A web server (Apache, Nginx, Caddy, or PHP's built-in server for local dev)
 
-## Acknowledgements
+### Install
 
-- This script was inspired by common needs for IP address detection in web applications.
-- Thanks to the PHP community for the continuous support and feedback.
+```bash
+git clone https://github.com/noxitylabs/checkmyipaddress.net.git
+cd checkmyipaddress.net
+```
+
+Drop the contents into your web root, or run locally:
+
+```bash
+php -S 127.0.0.1:8001
+```
+
+### Reverse-proxy notes
+
+If you sit behind a reverse proxy or CDN (Cloudflare, Caddy, Nginx, etc.), make sure the original client IP is forwarded via `HTTP_CLIENT_IP`, `HTTP_X_FORWARDED_FOR`, or `REMOTE_ADDR` — those are the headers `getIpAddress()` walks, in that order.
+
+---
+
+## Design
+
+The site uses the **Noxity Design System (v2)** — a Metronome-inspired editorial system pairing Manrope sans with Instrument Serif italic accents and JetBrains Mono eyebrows on a warm paper palette.
+
+| Token | Hex |
+|---|---|
+| Ink | `#23375A` |
+| Crimson | `#B83553` |
+| Evergreen | `#4E7954` |
+| Paper | `#F4F0E7` |
+| Paper-2 | `#EFEBE3` |
+
+Tokens live in `style.css`; see Noxity's design system bundle for the full system.
+
+---
+
+## Project structure
+
+```
+.
+├── index.php     # Server-side IP detection + page markup + copy JS
+├── style.css     # Design tokens + component styles
+├── README.md
+└── LICENSE.md
+```
+
+---
+
+## License
+
+See [LICENSE.md](LICENSE.md).
