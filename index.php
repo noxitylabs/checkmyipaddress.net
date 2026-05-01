@@ -1,19 +1,26 @@
 <?php
+function findIpInHeader($value, $flag) {
+    foreach (explode(',', $value) as $candidate) {
+        $candidate = trim($candidate);
+        if (filter_var($candidate, FILTER_VALIDATE_IP, $flag)) {
+            return $candidate;
+        }
+    }
+    return null;
+}
+
 function getIpAddress() {
-    foreach (array('HTTP_CLIENT_IP', 'HTTP_X_FORWARDED_FOR', 'REMOTE_ADDR') as $key) {
-        if (array_key_exists($key, $_SERVER) === true) {
-            foreach (explode(',', $_SERVER[$key]) as $ip) {
-                $ip = trim($ip);
-                if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
-                    return $ip;
-                }
-            }
-            foreach (explode(',', $_SERVER[$key]) as $ip) {
-                $ip = trim($ip);
-                if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
-                    return $ip;
-                }
-            }
+    foreach (['HTTP_CLIENT_IP', 'HTTP_X_FORWARDED_FOR', 'REMOTE_ADDR'] as $key) {
+        if (!array_key_exists($key, $_SERVER)) {
+            continue;
+        }
+        $v6 = findIpInHeader($_SERVER[$key], FILTER_FLAG_IPV6);
+        if ($v6 !== null) {
+            return $v6;
+        }
+        $v4 = findIpInHeader($_SERVER[$key], FILTER_FLAG_IPV4);
+        if ($v4 !== null) {
+            return $v4;
         }
     }
     return '';
@@ -34,8 +41,17 @@ if (stripos($_SERVER['HTTP_USER_AGENT'] ?? '', 'curl') !== false) {
     exit;
 }
 
-$versionLabel = $isV6 ? 'IPv6' : ($isV4 ? 'IPv4' : 'Unavailable');
-$versionClass = $isV6 ? 'v6' : ($isV4 ? 'v4' : 'unavailable');
+if ($isV6) {
+    $versionLabel = 'IPv6';
+    $versionClass = 'v6';
+} elseif ($isV4) {
+    $versionLabel = 'IPv4';
+    $versionClass = 'v4';
+} else {
+    $versionLabel = 'Unavailable';
+    $versionClass = 'unavailable';
+}
+
 $displayIp = $ip !== '' ? $ip : 'No address detected';
 ?>
 <!doctype html>
@@ -97,7 +113,7 @@ $displayIp = $ip !== '' ? $ip : 'No address detected';
                     <span class="ip-version <?php echo htmlspecialchars($versionClass); ?>"><?php echo htmlspecialchars($versionLabel); ?></span>
                 </div>
 
-                <div id="copy" class="ip-display" role="button" tabindex="0" aria-label="Copy IP address">
+                <button id="copy" class="ip-display" type="button" aria-label="Copy IP address">
                     <span class="ip-text" id="ipText"><?php echo htmlspecialchars($displayIp); ?></span>
                     <span class="ip-hint" aria-hidden="true">
                         <span class="hint-idle">
@@ -109,7 +125,7 @@ $displayIp = $ip !== '' ? $ip : 'No address detected';
                             <span>Copied</span>
                         </span>
                     </span>
-                </div>
+                </button>
 
                 <div class="ip-stage-foot">
                     <div class="meta">
@@ -155,7 +171,7 @@ $displayIp = $ip !== '' ? $ip : 'No address detected';
                         <span class="term-tag"><em>default</em></span>
                     </div>
                     <div class="term-body">
-                        <div class="term-prompt" role="button" tabindex="0" aria-label="Copy command">
+                        <button class="term-prompt" type="button" aria-label="Copy command">
                             <span class="dollar">$</span>
                             <span class="cmd">curl checkmyipaddress.net</span>
                             <span class="copy-icon idle" aria-hidden="true">
@@ -165,7 +181,7 @@ $displayIp = $ip !== '' ? $ip : 'No address detected';
                                 <svg viewBox="0 0 24 24"><path d="M5 12l4.5 4.5L20 6"/></svg>
                                 <span>Copied</span>
                             </span>
-                        </div>
+                        </button>
                         <p class="term-desc">Returns your IPv4 address as plain text &mdash; no HTML, no JSON, no headers <em>to fight</em>.</p>
                     </div>
                 </article>
@@ -176,7 +192,7 @@ $displayIp = $ip !== '' ? $ip : 'No address detected';
                         <span class="term-tag"><em>opt-in</em></span>
                     </div>
                     <div class="term-body">
-                        <div class="term-prompt" role="button" tabindex="0" aria-label="Copy command">
+                        <button class="term-prompt" type="button" aria-label="Copy command">
                             <span class="dollar">$</span>
                             <span class="cmd">curl checkmyipaddress.net?mode=v6</span>
                             <span class="copy-icon idle" aria-hidden="true">
@@ -186,7 +202,7 @@ $displayIp = $ip !== '' ? $ip : 'No address detected';
                                 <svg viewBox="0 0 24 24"><path d="M5 12l4.5 4.5L20 6"/></svg>
                                 <span>Copied</span>
                             </span>
-                        </div>
+                        </button>
                         <p class="term-desc">Force the response to your IPv6 address &mdash; falls back to <em>&ldquo;IPv6 Not available&rdquo;</em> when your network can&rsquo;t reach v6.</p>
                     </div>
                 </article>

@@ -426,6 +426,16 @@ main { flex: 1; padding-bottom: 96px; }
 }
 
 .ip-display {
+    appearance: none;
+    -webkit-appearance: none;
+    background: transparent;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    text-align: left;
+    color: inherit;
+    font: inherit;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -704,6 +714,12 @@ main { flex: 1; padding-bottom: 96px; }
 }
 
 .term-card .term-prompt {
+    appearance: none;
+    -webkit-appearance: none;
+    border: 0;
+    margin: 0;
+    width: 100%;
+    text-align: left;
     background: var(--term-bg);
     color: var(--term-fg);
     border-radius: var(--radius-md);
