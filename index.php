@@ -67,8 +67,8 @@ if ($primaryIp === null) {
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="theme-color" content="#F7F5F0" media="(prefers-color-scheme: light)">
     <meta name="theme-color" content="#131A28" media="(prefers-color-scheme: dark)">
-    <title>Check My IP Address — Noxity</title>
-    <meta name="description" content="A simple, honest tool from Noxity that shows your public IP address — IPv4 or IPv6 — with a one-line curl command for your terminal.">
+    <title>Check My IP Address - Noxity</title>
+    <meta name="description" content="Shows your public IP address (IPv4 and IPv6) with a curl command for the terminal. Made by Noxity.">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -103,9 +103,9 @@ if ($primaryIp === null) {
 <main>
     <section class="hero">
         <div class="shell">
-            <div class="hero-eyebrow"><span class="eyebrow">IP Lookup · honest &amp; ad-free</span></div>
-            <h1>Your public<br><em>address</em>, plainly.</h1>
-            <p class="hero-lead">No ads, no tracking, no fluff — just the IP your network is presenting to the world right <em>now</em>.</p>
+            <div class="hero-eyebrow"><span class="eyebrow">Public IP lookup</span></div>
+            <h1>Your public<br><em>IP address</em>.</h1>
+            <p class="hero-lead">No ads or tracking. The IP your network is showing the rest of the internet right <em>now</em>.</p>
 
             <div class="ip-stage">
                 <div class="ip-stage-head">
@@ -156,17 +156,16 @@ if ($primaryIp === null) {
         <div class="shell">
             <div class="section-head">
                 <h2>What <em>is</em> an IP address?</h2>
-                <p class="lead">The language computers speak when they pass packets across networks. Every device on your network — and every server you reach — is identified by one.</p>
+                <p class="lead">The language that computers use to transmit data packets across networks is called Internet Protocol. On your home/office network or the internet, your computer, mobile device, or appliance is identified by its IP address.</p>
             </div>
             <div class="section-body">
                 <div>
-                    <p>IPv4 addresses are four 8-bit octets — numbers from 0 to 255 — separated by periods. That gives roughly <em>4.29 billion</em> unique addresses. A lot, until you remember how many phones, fridges, and cameras are on the internet today.</p>
-                    <p>So we&rsquo;re running out. Not in a panic-now way; in a planned-for-decades way.</p>
+                    <p>Four 8-bit octets (0 to 255) separated by a period make up IP addresses. There are about 4,294,967,296 addresses that may be used since this creates a 32-bit numeric address. Astonishingly, they will soon run out.</p>
                 </div>
                 <div class="stat-card">
-                    <span class="stat-eyebrow">The IPv6 successor</span>
+                    <span class="stat-eyebrow">IPv6</span>
                     <div class="stat-number">340 <em>undecillion</em></div>
-                    <p class="stat-tag">Total addresses available with IPv6 — enough to assign one to every atom on Earth, with around 100 more Earths&rsquo; worth in reserve. Practically infinite.</p>
+                    <p class="stat-tag">Don&rsquo;t freak out though! The IPv6 protocol was already developed by the researchers as a replacement. Having the ability to support 340,282,366,920,938,463,463,374,607,431,768,211,456 addresses, which is enough to give every atom on Earth an IP address. And have enough for around 100 more Earths.</p>
                 </div>
             </div>
         </div>
@@ -176,7 +175,7 @@ if ($primaryIp === null) {
         <div class="shell">
             <div class="section-head">
                 <h2>Use it from your <em>terminal.</em></h2>
-                <p class="lead">Hit the endpoint with curl and get just the address back &mdash; nothing else to parse, perfect for shell scripts and CI runs.</p>
+                <p class="lead">Hit the endpoint with curl. You get back the address as plain text, ready for shell scripts and CI.</p>
             </div>
 
             <div class="term-grid">
@@ -197,7 +196,7 @@ if ($primaryIp === null) {
                                 <span>Copied</span>
                             </span>
                         </button>
-                        <p class="term-desc">Returns your IPv4 address as plain text &mdash; no HTML, no JSON, no headers <em>to fight</em>.</p>
+                        <p class="term-desc">Returns your IPv4 address as plain text. Nothing else <em>to parse</em>.</p>
                     </div>
                 </article>
 
@@ -218,7 +217,7 @@ if ($primaryIp === null) {
                                 <span>Copied</span>
                             </span>
                         </button>
-                        <p class="term-desc">Force the response to your IPv6 address &mdash; falls back to <em>&ldquo;IPv6 Not available&rdquo;</em> when your network can&rsquo;t reach v6.</p>
+                        <p class="term-desc">Forces the response to your IPv6 address. Falls back to <em>&ldquo;IPv6 Not available&rdquo;</em> if your network can&rsquo;t reach v6.</p>
                     </div>
                 </article>
             </div>
