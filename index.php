@@ -37,7 +37,6 @@ if (stripos($_SERVER['HTTP_USER_AGENT'] ?? '', 'curl') !== false) {
 $versionLabel = $isV6 ? 'IPv6' : ($isV4 ? 'IPv4' : 'Unavailable');
 $versionClass = $isV6 ? 'v6' : ($isV4 ? 'v4' : 'unavailable');
 $displayIp = $ip !== '' ? $ip : 'No address detected';
-$year = date('Y');
 ?>
 <!doctype html>
 <html lang="en">
@@ -45,12 +44,25 @@ $year = date('Y');
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="theme-color" content="#F7F5F0" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#131A28" media="(prefers-color-scheme: dark)">
     <title>Check My IP Address — Noxity</title>
     <meta name="description" content="A simple, honest tool from Noxity that shows your public IP address — IPv4 or IPv6 — with a one-line curl command for your terminal.">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="style.css" rel="stylesheet" type="text/css">
+
+    <script>
+    (function () {
+        try {
+            var saved = localStorage.getItem('cmip-theme');
+            var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            var theme = saved || (prefersDark ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-theme', theme);
+        } catch (e) {}
+    })();
+    </script>
 </head>
 <body>
 
@@ -65,6 +77,10 @@ $year = date('Y');
             <a href="#what-is-an-ip">What is an IP?</a>
             <a href="#terminal">Terminal</a>
         </div>
+        <button id="themeToggle" class="theme-toggle" type="button" aria-label="Toggle color theme" title="Toggle color theme">
+            <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        </button>
     </nav>
 </header>
 
@@ -179,19 +195,6 @@ $year = date('Y');
     </section>
 </main>
 
-<footer>
-    <div class="shell">
-        <div class="foot-row">
-            <span>&copy; <?php echo $year; ?> Noxity.io &middot; Gostoljub d.o.o.</span>
-            <div class="foot-links">
-                <a href="https://noxity.io">Noxity.io</a>
-                <a href="https://github.com/Noxity-Network">GitHub</a>
-                <a href="mailto:hello@noxity.io">hello@noxity.io</a>
-            </div>
-        </div>
-    </div>
-</footer>
-
 <script>
 (function () {
     function fallbackCopy(text) {
@@ -254,6 +257,34 @@ $year = date('Y');
             return cmd ? cmd.textContent.trim() : '';
         });
     });
+
+    var themeBtn = document.getElementById('themeToggle');
+    if (themeBtn) {
+        var setTheme = function (theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            try { localStorage.setItem('cmip-theme', theme); } catch (e) {}
+            themeBtn.setAttribute('aria-pressed', theme === 'dark' ? 'true' : 'false');
+        };
+        var current = document.documentElement.getAttribute('data-theme') || 'light';
+        themeBtn.setAttribute('aria-pressed', current === 'dark' ? 'true' : 'false');
+        themeBtn.addEventListener('click', function () {
+            var next = (document.documentElement.getAttribute('data-theme') === 'dark') ? 'light' : 'dark';
+            setTheme(next);
+        });
+
+        if (window.matchMedia) {
+            var mq = window.matchMedia('(prefers-color-scheme: dark)');
+            var handler = function (e) {
+                try {
+                    if (!localStorage.getItem('cmip-theme')) {
+                        setTheme(e.matches ? 'dark' : 'light');
+                    }
+                } catch (err) {}
+            };
+            if (mq.addEventListener) mq.addEventListener('change', handler);
+            else if (mq.addListener) mq.addListener(handler);
+        }
+    }
 })();
 </script>
 </body>
