@@ -9,50 +9,55 @@ function findIpInHeader($value, $flag) {
     return null;
 }
 
-function getIpAddress() {
+function detectAddresses() {
+    $v4 = null;
+    $v6 = null;
     foreach (['HTTP_CLIENT_IP', 'HTTP_X_FORWARDED_FOR', 'REMOTE_ADDR'] as $key) {
         if (!array_key_exists($key, $_SERVER)) {
             continue;
         }
-        $v6 = findIpInHeader($_SERVER[$key], FILTER_FLAG_IPV6);
-        if ($v6 !== null) {
-            return $v6;
+        if ($v4 === null) {
+            $v4 = findIpInHeader($_SERVER[$key], FILTER_FLAG_IPV4);
         }
-        $v4 = findIpInHeader($_SERVER[$key], FILTER_FLAG_IPV4);
-        if ($v4 !== null) {
-            return $v4;
+        if ($v6 === null) {
+            $v6 = findIpInHeader($_SERVER[$key], FILTER_FLAG_IPV6);
+        }
+        if ($v4 !== null && $v6 !== null) {
+            break;
         }
     }
-    return '';
+    return ['v4' => $v4, 'v6' => $v6];
 }
 
-$ip = getIpAddress();
-$isV6 = filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) !== false;
-$isV4 = filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) !== false;
+$addrs = detectAddresses();
+$ipv4 = $addrs['v4'];
+$ipv6 = $addrs['v6'];
 
 if (stripos($_SERVER['HTTP_USER_AGENT'] ?? '', 'curl') !== false) {
     if (isset($_GET['mode']) && strtolower($_GET['mode']) === 'v6') {
-        $ipv6 = filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6);
-        echo ($ipv6 === false ? "IPv6 Not available" : $ipv6) . "\n";
+        echo ($ipv6 ?? 'IPv6 Not available') . "\n";
     } else {
-        $ipv4 = filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4);
-        echo ($ipv4 === false ? "IPv4 Not available" : $ipv4) . "\n";
+        echo ($ipv4 ?? 'IPv4 Not available') . "\n";
     }
     exit;
 }
 
-if ($isV6) {
-    $versionLabel = 'IPv6';
-    $versionClass = 'v6';
-} elseif ($isV4) {
-    $versionLabel = 'IPv4';
-    $versionClass = 'v4';
-} else {
-    $versionLabel = 'Unavailable';
-    $versionClass = 'unavailable';
-}
+$primaryIp = $ipv4 ?? $ipv6;
+$secondaryIp = $ipv4 !== null ? $ipv6 : null;
 
-$displayIp = $ip !== '' ? $ip : 'No address detected';
+if ($primaryIp === null) {
+    $primaryLabel = 'Unavailable';
+    $primaryClass = 'unavailable';
+    $primaryDisplay = 'No address detected';
+} elseif ($primaryIp === $ipv4) {
+    $primaryLabel = 'IPv4';
+    $primaryClass = 'v4';
+    $primaryDisplay = $primaryIp;
+} else {
+    $primaryLabel = 'IPv6';
+    $primaryClass = 'v6';
+    $primaryDisplay = $primaryIp;
+}
 ?>
 <!doctype html>
 <html lang="en">
@@ -85,14 +90,9 @@ $displayIp = $ip !== '' ? $ip : 'No address detected';
 <header class="topbar">
     <nav class="pill-nav">
         <a class="brand" href="https://noxity.io" aria-label="Noxity">
-            <span class="mark">N</span>
-            <span class="word">Nox<em>it</em>y.</span>
+            <img class="brand-logo" src="noxity-logo.png" alt="" width="28" height="28">
+            <span class="brand-word">Noxity</span>
         </a>
-        <div class="nav-links">
-            <a href="https://noxity.io">Hosting</a>
-            <a href="#what-is-an-ip">What is an IP?</a>
-            <a href="#terminal">Terminal</a>
-        </div>
         <button id="themeToggle" class="theme-toggle" type="button" aria-label="Toggle color theme" title="Toggle color theme">
             <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
             <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
@@ -110,11 +110,11 @@ $displayIp = $ip !== '' ? $ip : 'No address detected';
             <div class="ip-stage">
                 <div class="ip-stage-head">
                     <span class="label">Detected address</span>
-                    <span class="ip-version <?php echo htmlspecialchars($versionClass); ?>"><?php echo htmlspecialchars($versionLabel); ?></span>
+                    <span class="ip-version <?php echo htmlspecialchars($primaryClass); ?>"><?php echo htmlspecialchars($primaryLabel); ?></span>
                 </div>
 
-                <button id="copy" class="ip-display" type="button" aria-label="Copy IP address">
-                    <span class="ip-text" id="ipText"><?php echo htmlspecialchars($displayIp); ?></span>
+                <button id="copy" class="ip-display" type="button" aria-label="Copy <?php echo htmlspecialchars($primaryLabel); ?> address">
+                    <span class="ip-text" id="ipText"><?php echo htmlspecialchars($primaryDisplay); ?></span>
                     <span class="ip-hint" aria-hidden="true">
                         <span class="hint-idle">
                             <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
@@ -127,9 +127,24 @@ $displayIp = $ip !== '' ? $ip : 'No address detected';
                     </span>
                 </button>
 
+                <?php if ($secondaryIp !== null): ?>
+                <button class="ip-secondary" type="button" aria-label="Copy IPv6 address">
+                    <span class="ip-secondary-tag">IPv6</span>
+                    <span class="ip-secondary-text" id="ipv6Text"><?php echo htmlspecialchars($secondaryIp); ?></span>
+                    <span class="ip-secondary-hint" aria-hidden="true">
+                        <span class="hint-idle">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+                        </span>
+                        <span class="hint-done">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l4.5 4.5L20 6"/></svg>
+                        </span>
+                    </span>
+                </button>
+                <?php endif; ?>
+
                 <div class="ip-stage-foot">
                     <div class="meta">
-                        <span><b>Protocol</b><?php echo htmlspecialchars($versionLabel); ?></span>
+                        <span><b>Protocol</b><?php echo htmlspecialchars($primaryLabel); ?><?php echo $secondaryIp !== null ? ' + IPv6' : ''; ?></span>
                         <span><b>Resolved</b>Live, server-side</span>
                     </div>
                 </div>
@@ -266,6 +281,11 @@ $displayIp = $ip !== '' ? $ip : 'No address detected';
             return (v && v !== 'No address detected') ? v : '';
         });
     }
+
+    document.querySelectorAll('.ip-secondary').forEach(function (el) {
+        var t = el.querySelector('.ip-secondary-text');
+        bindCopy(el, function () { return t ? t.textContent.trim() : ''; });
+    });
 
     document.querySelectorAll('.term-prompt').forEach(function (el) {
         bindCopy(el, function () {
